@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Manager.Data;
 using Manager.Entities;
+using Manager.Web.Models.Account;
 
 namespace Manager.Web.Controllers
 {
@@ -21,16 +22,42 @@ namespace Manager.Web.Controllers
             _context = context;
         }
 
+
         // GET: api/Accounts
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
+        //[EnableCors("Todos")]
+        [HttpGet("[action]")]
+        public async Task<IEnumerable<AccountViewModel>> Listar()
         {
-            return await _context.Accounts.ToListAsync();
+            var accounts = await _context.Accounts.ToListAsync();
+
+            return accounts.Select(a => new AccountViewModel
+            {
+                IdAccount = a.IdAccount,
+                WebAccountName = a.WebAccountName,
+                UserAccount = a.UserAccount,
+                Password = a.Password,
+                Description = a.Description,
+                Email = a.Email
+            });
+        }
+
+        // GET: api/Accounts/ShowBasicData
+
+        [HttpGet("[action]")]
+        public async Task<IEnumerable<AccountBasicDataViewModel>> ShowBasicData()
+        {
+            var accounts = await _context.Accounts.ToListAsync();
+
+            return accounts.Select(a => new AccountBasicDataViewModel
+            {
+                WebAccountName = a.WebAccountName,
+                Email = a.Email
+            });
         }
 
         // GET: api/Accounts/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Account>> GetAccount(int id)
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> Mostrar([FromRoute] int id)
         {
             var account = await _context.Accounts.FindAsync(id);
 
@@ -39,19 +66,62 @@ namespace Manager.Web.Controllers
                 return NotFound();
             }
 
-            return account;
+            return Ok(new AccountViewModel
+            {
+                WebAccountName = account.WebAccountName,
+                UserAccount = account.UserAccount,
+                Password = account.Password,
+                Description = account.Description,
+                Email = account.Email
+            });
+        }
+
+        // GET: api/Accounts/search/searchString
+        [HttpGet("[action]/{searchString}")]
+        public async Task<IEnumerable<AccountViewModel>> Search([FromRoute] string searchString)
+        {
+            var accounts = await _context.Accounts
+                .Where(a => a.WebAccountName.Contains(searchString))
+                .ToListAsync();
+
+            return accounts.Select(a => new AccountViewModel
+            {
+                IdAccount = a.IdAccount,
+                WebAccountName = a.WebAccountName,
+                UserAccount = a.UserAccount,
+                Password = a.Password,
+                Description = a.Description,
+                Email = a.Email
+            });
+
         }
 
         // PUT: api/Accounts/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAccount(int id, Account account)
+        [HttpPut("[action]/{id}")]
+        public async Task<IActionResult> Update([FromBody] UpdateViewModel model)
         {
-            if (id != account.IdAccount)
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (model.IdAccount <= 0)
             {
                 return BadRequest();
             }
 
-            _context.Entry(account).State = EntityState.Modified;
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.IdAccount == model.IdAccount);
+
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            account.WebAccountName = model.WebAccountName;
+            account.UserAccount = model.UserAccount;
+            account.Password = model.Password;
+            account.Description = model.Description;
+            account.Email = model.Email;
 
             try
             {
@@ -59,33 +129,54 @@ namespace Manager.Web.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!AccountExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                // Guardar Excepción
+                return BadRequest();
             }
 
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Accounts
-        [HttpPost]
-        public async Task<ActionResult<Account>> PostAccount(Account account)
+        [HttpPost("[action]")]
+        public async Task<IActionResult> Crear([FromBody] CreateViewModel model)
         {
-            _context.Accounts.Add(account);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            return CreatedAtAction("GetAccount", new { id = account.IdAccount }, account);
+            Account account = new Account
+            {
+                WebAccountName = model.WebAccountName,
+                UserAccount = model.UserAccount,
+                Password = model.Password,
+                Description = model.Description,
+                Email = model.Email
+            };
+
+            _context.Accounts.Add(account);
+            try
+            {
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+            return Ok();
+
         }
 
         // DELETE: api/Accounts/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Account>> DeleteAccount(int id)
+        [HttpDelete("[action]/{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var account = await _context.Accounts.FindAsync(id);
             if (account == null)
             {
@@ -93,10 +184,30 @@ namespace Manager.Web.Controllers
             }
 
             _context.Accounts.Remove(account);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
 
-            return account;
+            return Ok(account);
         }
+        //public async Task<ActionResult<Account>> DeleteAccount(int id)
+        //{
+        //    var account = await _context.Accounts.FindAsync(id);
+        //    if (account == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    _context.Accounts.Remove(account);
+        //    await _context.SaveChangesAsync();
+
+        //    return account;
+        //}
 
         private bool AccountExists(int id)
         {
