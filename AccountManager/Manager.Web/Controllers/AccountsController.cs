@@ -26,7 +26,7 @@ namespace Manager.Web.Controllers
         // GET: api/Accounts
         //[EnableCors("Todos")]
         [HttpGet("[action]")]
-        public async Task<IEnumerable<AccountViewModel>> Listar()
+        public async Task<IEnumerable<AccountViewModel>> ToList()
         {
             var accounts = await _context.Accounts.ToListAsync();
 
@@ -44,12 +44,13 @@ namespace Manager.Web.Controllers
         // GET: api/Accounts/ShowBasicData
 
         [HttpGet("[action]")]
-        public async Task<IEnumerable<AccountBasicDataViewModel>> ShowBasicData()
+        public async Task<IEnumerable<AccountBasicDataViewModel>> MainData()
         {
             var accounts = await _context.Accounts.ToListAsync();
 
             return accounts.Select(a => new AccountBasicDataViewModel
             {
+                IdAccount = a.IdAccount,
                 WebAccountName = a.WebAccountName,
                 Email = a.Email
             });
@@ -57,7 +58,7 @@ namespace Manager.Web.Controllers
 
         // GET: api/Accounts/5
         [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> Mostrar([FromRoute] int id)
+        public async Task<IActionResult> Show([FromRoute] int id)
         {
             var account = await _context.Accounts.FindAsync(id);
 
@@ -68,6 +69,7 @@ namespace Manager.Web.Controllers
 
             return Ok(new AccountViewModel
             {
+                IdAccount = account.IdAccount,
                 WebAccountName = account.WebAccountName,
                 UserAccount = account.UserAccount,
                 Password = account.Password,
@@ -96,8 +98,8 @@ namespace Manager.Web.Controllers
 
         }
 
-        // PUT: api/Accounts/5
-        [HttpPut("[action]/{id}")]
+        // PUT: api/Accounts/
+        [HttpPut("[action]")]
         public async Task<IActionResult> Update([FromBody] UpdateViewModel model)
         {
             if (!ModelState.IsValid)
@@ -138,7 +140,7 @@ namespace Manager.Web.Controllers
 
         // POST: api/Accounts
         [HttpPost("[action]")]
-        public async Task<IActionResult> Crear([FromBody] CreateViewModel model)
+        public async Task<IActionResult> Create([FromBody] CreateViewModel model)
         {
             if (!ModelState.IsValid)
             {
