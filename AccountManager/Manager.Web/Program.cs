@@ -18,7 +18,11 @@ namespace Manager.Web
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+            WebHost.CreateDefaultBuilder(args) 
+            //.ConfigureAppConfiguration((HostingContext, config) =>{
+            //    config.AddEnvironmentVariables(Environment.GetEnvironmentVariable("Conection"));
+            //})
+            .UseStartup<Startup>();
+                
     }
 }

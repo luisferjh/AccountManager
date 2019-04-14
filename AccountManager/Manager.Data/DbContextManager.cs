@@ -10,6 +10,7 @@ namespace Manager.Data
     public class DbContextManager:DbContext
     {
         public DbSet<Account> Accounts { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public DbContextManager(DbContextOptions<DbContextManager> options)
              : base(options)
@@ -21,6 +22,7 @@ namespace Manager.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new AccountMap());
+            modelBuilder.ApplyConfiguration(new UserMap());
         }
     }
 }
