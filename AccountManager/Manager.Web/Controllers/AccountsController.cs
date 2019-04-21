@@ -8,9 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using Manager.Data;
 using Manager.Entities;
 using Manager.Web.Models.Account;
+using Microsoft.AspNetCore.Authorization;
+using System.Net;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Manager.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class AccountsController : ControllerBase
