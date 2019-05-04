@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 
 namespace Manager.Web.Controllers
 {
@@ -195,6 +196,7 @@ namespace Manager.Web.Controllers
             return Ok();
         }
 
+        //[EnableCors("Todos")]
         [HttpPost("[action]")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
